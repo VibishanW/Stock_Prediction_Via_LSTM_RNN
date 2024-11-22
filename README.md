@@ -75,3 +75,23 @@ python main.py
 ```
 
 Open Output file for results
+
+#Project Update 1:
+LSTM-RNN:
+For this project update I first created a python project that takes yahoo finance data for the S&P500, a popular index fund.
+Using a years worth of daily time scale data I scraped opening, closing, low, high, and volume data. 
+Tensorflow was used to implement a RNN that analyzes the prices or data in each column to output a prediction for the next day.
+The goal of this python implementation is to gain an understanding of how an LSTM-RNN works and understand how data handling works for neural networks.
+Additionally, this implementation will act as the basis of comparision when analyzing preformance and accuracy of a hardware acclerated and software implementation of this neural network.
+
+RNN:
+While the goal of this project is to implement an LSTM-RNN into a u280, it was important to break down this project into incremental steps.
+In this rendition I implemented a RNN to gain a better understanding of the basics of creating projects from scratch on Vitis HLS.
+LSTMs also act as a additional improvement to a simple RNN so this implementation is a good half way point in synthesizing a full fledged LSTM-RNN.
+This project includes design files rnn.h, rnn.cpp, testbench files, input, and a golden output file. The input file contains a normalized version of the data used in the LSTM-RNN python
+implementation above. The output/golden output file prints out precitions for each column(opening, closing, etc) in normalized terms between 0 and 1.
+
+Whats next?
+For the final iteration of this project I will upgrade the RNN implementation to an LSTM-RNN design. I will also upgrade both implementations to print out multiple rows of predictions.
+This will allow me to create accurate comparisons to document percent accuracy data between the designs. Additionally, I will created a script to easily convert between the 
+normalized and priced data. After creating a full fledged LSTM-RNN I will be working on optimizing the design.
