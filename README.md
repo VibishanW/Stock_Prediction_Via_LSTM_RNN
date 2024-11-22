@@ -76,7 +76,7 @@ python main.py
 
 Open Output file for results
 
-#Project Update 1:
+# Project Update 1:
 LSTM-RNN:
 For this project update I first created a python project that takes yahoo finance data for the S&P500, a popular index fund.
 Using a years worth of daily time scale data I scraped opening, closing, low, high, and volume data. 
