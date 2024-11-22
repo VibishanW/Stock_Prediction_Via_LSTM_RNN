@@ -25,6 +25,25 @@ source /tools/Xilinx/Vitis/2022.2/settings64.sh
 source /opt/xilinx/xrt/setup.sh
 ```
 
+In Vitis...
+Select 'Create HLS Component'
+Configuration file selection can be left to default and select a location for the component
+Select 'Empty File" for the config file in the next page
+
+For source files...
+Under design files select rnn.cpp and rnn.hpp from RNN_HW
+Under testbench select testbench.cpp, testbench.hpp, data.txt, and out.gold.dat
+and select rnn_sequence for the top function
+
+For Hardware -> Part select 'xcu280-fsvh2892-2L-e'
+
+For Settings...
+Select 250MHz for clock speed
+Select Vitis Kernel Flow Target for Flow Target
+Select Generate a Vitis XO for Package Output Fromat
+
+Run Simulation and Synthesis to generate 
+
 # Instructions for running RNN in software
 ## 1. Clone the repository
 
