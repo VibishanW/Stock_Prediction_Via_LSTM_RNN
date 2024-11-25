@@ -42,7 +42,13 @@ Select 250MHz for clock speed
 Select Vitis Kernel Flow Target for Flow Target
 Select Generate a Vitis XO for Package Output Fromat
 
-Run Simulation and Synthesis to generate 
+Run Simulation, Synthesis, and package to generate a XO file.
+
+Then run the following to create the .xclbin
+
+```bash
+v++ -l -t hw --platform xilinx_u280_gen3x16_xdma_1_202211_1 -o rnn_sequencer.xclbin <path to .xo>
+```
 
 # Instructions for running RNN in software
 ## 1. Clone the repository
