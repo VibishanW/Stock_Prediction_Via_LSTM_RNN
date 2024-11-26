@@ -50,6 +50,19 @@ Then run the following to create the .xclbin
 v++ -l -t hw --platform xilinx_u280_gen3x16_xdma_1_202211_1 -o rnn_sequencer.xclbin <path to .xo>
 ```
 
+Generate rnn_sequence.exe with the following command
+
+bash```
+g++ -std=c++17 -I/opt/xilinx/xrt/include -L/opt/xilinx/xrt/lib -o rnn_sequence.exe host.cpp -lxrt_coreutil -pthread
+```
+
+Verify that you are on a machine connected to a u280 or access a NERC server with access to one.
+Verify that rnn_sequencer.exe and rnn_sequencer.xclbin exist on your machine or the server and cd to its location then use the following command to program the FPGA:
+
+bash```
+./rnn_sequence.exe rnn_sequence.xclbin
+```
+
 # Instructions for running RNN in software
 ## 1. Clone the repository
 
