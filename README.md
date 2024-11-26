@@ -108,9 +108,14 @@ While the goal of this project is to implement an LSTM-RNN into a u280, it was i
 In this rendition I implemented a RNN to gain a better understanding of the basics of creating projects from scratch on Vitis HLS.
 LSTMs also act as a additional improvement to a simple RNN so this implementation is a good half way point in synthesizing a full fledged LSTM-RNN.
 This project includes design files rnn.h, rnn.cpp, testbench files, input, and a golden output file. The input file contains a normalized version of the data used in the LSTM-RNN python
-implementation above. The output/golden output file prints out precitions for each column(opening, closing, etc) in normalized terms between 0 and 1.
+implementation above. The output/golden output file prints out predictions for each column(opening, closing, etc) in normalized terms between 0 and 1.
 
 Whats next?
 For the final iteration of this project I will upgrade the RNN implementation to an LSTM-RNN design. I will also upgrade both implementations to print out multiple rows of predictions.
 This will allow me to create accurate comparisons to document percent accuracy data between the designs. Additionally, I will created a script to easily convert between the 
 normalized and priced data. After creating a full fledged LSTM-RNN I will be working on optimizing the design.
+
+# Project Update 2:
+LSTM-RNN:
+
+RNN: In this update I completed the RNN implementation by creating a host.cpp and Makefile to synthesize a rnn_sequence.xclbin and rnn_sequence.exe. The files used to generate the bitstream and .exe are present as well as the prebuilt files. The readme is also updated with instructions how to program the u280 with the RNN hardware implementation.
