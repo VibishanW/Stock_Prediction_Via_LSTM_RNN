@@ -4,73 +4,113 @@
 */
 
 #include "lstm_rnn.h"
+#include <cstdlib>
+#include <cmath>
 
-// Weight matrices and bias initialization
-fixed_type W[HIDDEN_SIZE][INPUT_SIZE] = {
-    {0.0543, -0.0234, 0.0675, -0.0812, 0.0398},
-    {-0.0457, 0.0321, -0.0104, 0.0932, -0.0671},
-    {0.0223, -0.0785, 0.0416, -0.0123, 0.0887},
-    {-0.0371, 0.0465, -0.0568, 0.0721, -0.0352}
-};
+// Xavier initialization
+fixed_type xavier_initialization(int input_size, int output_size) {
+    float limit = std::sqrt(6.0f / (input_size + output_size));
+    float random_value = ((float)std::rand() / RAND_MAX) * 2.0f * limit - limit; // Uniform distribution
+    return fixed_type(random_value);
+}
 
-fixed_type U[HIDDEN_SIZE][HIDDEN_SIZE] = {
-    {0.0625, -0.0492, 0.0108, -0.0715},
-    {-0.0537, 0.0304, -0.0417, 0.0552},
-    {0.0185, -0.0673, 0.0241, -0.0811},
-    {0.0456, -0.0327, 0.0732, -0.0554}
-};
+// Weight matrices and bias initialization using Xavier initialization
+fixed_type W_i[HIDDEN_SIZE][INPUT_SIZE];
+fixed_type U_i[HIDDEN_SIZE][HIDDEN_SIZE];
+fixed_type b_i[HIDDEN_SIZE];
 
-fixed_type b[HIDDEN_SIZE] = {0.0, 0.01, -0.02, 0.03};
+fixed_type W_f[HIDDEN_SIZE][INPUT_SIZE];
+fixed_type U_f[HIDDEN_SIZE][HIDDEN_SIZE];
+fixed_type b_f[HIDDEN_SIZE];
 
-// Function to compute one RNN cell step
-void rnn_cell(fixed_type x[INPUT_SIZE], fixed_type h_prev[HIDDEN_SIZE], fixed_type h[HIDDEN_SIZE]) {
-    #pragma HLS PIPELINE II=1
+fixed_type W_c[HIDDEN_SIZE][INPUT_SIZE];
+fixed_type U_c[HIDDEN_SIZE][HIDDEN_SIZE];
+fixed_type b_c[HIDDEN_SIZE];
+
+fixed_type W_o[HIDDEN_SIZE][INPUT_SIZE];
+fixed_type U_o[HIDDEN_SIZE][HIDDEN_SIZE];
+fixed_type b_o[HIDDEN_SIZE];
+
+// Initialize weights and biases
+void initialize_weights_and_biases() {
     for (int i = 0; i < HIDDEN_SIZE; i++) {
-        fixed_type sum = b[i];
+        for (int j = 0; j < INPUT_SIZE; j++) {
+            W_i[i][j] = xavier_initialization(INPUT_SIZE, HIDDEN_SIZE);
+            W_f[i][j] = xavier_initialization(INPUT_SIZE, HIDDEN_SIZE);
+            W_c[i][j] = xavier_initialization(INPUT_SIZE, HIDDEN_SIZE);
+            W_o[i][j] = xavier_initialization(INPUT_SIZE, HIDDEN_SIZE);
+        }
+        for (int j = 0; j < HIDDEN_SIZE; j++) {
+            U_i[i][j] = xavier_initialization(HIDDEN_SIZE, HIDDEN_SIZE);
+            U_f[i][j] = xavier_initialization(HIDDEN_SIZE, HIDDEN_SIZE);
+            U_c[i][j] = xavier_initialization(HIDDEN_SIZE, HIDDEN_SIZE);
+            U_o[i][j] = xavier_initialization(HIDDEN_SIZE, HIDDEN_SIZE);
+        }
+        b_i[i] = 0;
+        b_f[i] = 0;
+        b_c[i] = 0;
+        b_o[i] = 0;
+    }
+}
 
-        // Compute W * x_t
+inline fixed_type sigmoid(fixed_type x) {
+    return (fixed_type)1.0 / ((fixed_type)1.0 + hls::exp(-x));
+}
+
+// LSTM cell implementation
+void lstm_cell(fixed_type x[INPUT_SIZE], fixed_type h_prev[HIDDEN_SIZE], fixed_type c_prev[HIDDEN_SIZE],
+               fixed_type h[HIDDEN_SIZE], fixed_type c[HIDDEN_SIZE]) {
+    #pragma HLS PIPELINE II=1
+
+    for (int i = 0; i < HIDDEN_SIZE; i++) {
+        fixed_type input_gate = b_i[i];
+        fixed_type forget_gate = b_f[i];
+        fixed_type candidate = b_c[i];
+        fixed_type output_gate = b_o[i];
+
         for (int j = 0; j < INPUT_SIZE; j++) {
             #pragma HLS UNROLL
-            sum += W[i][j] * x[j];
+            input_gate += W_i[i][j] * x[j];
+            forget_gate += W_f[i][j] * x[j];
+            candidate += W_c[i][j] * x[j];
+            output_gate += W_o[i][j] * x[j];
         }
 
-        // Compute U * h_{t-1}
         for (int j = 0; j < HIDDEN_SIZE; j++) {
             #pragma HLS UNROLL
-            sum += U[i][j] * h_prev[j];
+            input_gate += U_i[i][j] * h_prev[j];
+            forget_gate += U_f[i][j] * h_prev[j];
+            candidate += U_c[i][j] * h_prev[j];
+            output_gate += U_o[i][j] * h_prev[j];
         }
 
-        // Apply the tanh activation function
-        h[i] = hls::tanh(sum);
+        input_gate = sigmoid(input_gate);
+        forget_gate = sigmoid(forget_gate);
+        candidate = hls::tanh(candidate);
+        output_gate = sigmoid(output_gate);
+
+        c[i] = forget_gate * c_prev[i] + input_gate * candidate;
+        h[i] = output_gate * hls::tanh(c[i]);
     }
 }
 
-// Function to process an entire sequence with the RNN
-void rnn_sequence(fixed_type x_seq[SEQ_LENGTH][INPUT_SIZE], fixed_type h[HIDDEN_SIZE]) {
-    #pragma HLS ARRAY_PARTITION variable=W complete dim=2
-    #pragma HLS ARRAY_PARTITION variable=U complete dim=2
-    #pragma HLS ARRAY_PARTITION variable=b complete dim=1
+// LSTM sequence processing
+void lstm_sequence(fixed_type x_seq[SEQ_LENGTH][INPUT_SIZE], fixed_type h[HIDDEN_SIZE]) {
+    #pragma HLS ARRAY_PARTITION variable=W_i complete dim=2
+    #pragma HLS ARRAY_PARTITION variable=U_i complete dim=2
+    #pragma HLS ARRAY_PARTITION variable=b_i complete dim=1
     #pragma HLS ARRAY_PARTITION variable=h complete dim=1
 
-    fixed_type h_prev[HIDDEN_SIZE] = {0}; // Initialize hidden state to zero
+    fixed_type c[HIDDEN_SIZE] = {0};
+    fixed_type h_prev[HIDDEN_SIZE] = {0};
+    fixed_type c_prev[HIDDEN_SIZE] = {0};
 
-    // Process each time step in the sequence
     for (int t = 0; t < SEQ_LENGTH; t++) {
-        fixed_type x[INPUT_SIZE];
+        lstm_cell(x_seq[t], h_prev, c_prev, h, c);
 
-        // Load input for the current time step
-        for (int i = 0; i < INPUT_SIZE; i++) {
-            x[i] = x_seq[t][i];
-        }
-
-        // Compute the RNN cell for the current time step
-        rnn_cell(x, h_prev, h);
-
-        // Update h_prev for the next time step
         for (int i = 0; i < HIDDEN_SIZE; i++) {
             h_prev[i] = h[i];
+            c_prev[i] = c[i];
         }
     }
 }
-
-

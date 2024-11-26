@@ -10,40 +10,31 @@
 
 typedef ap_fixed<32, 16> fixed_type;
 
-// Define parameters
-#define INPUT_SIZE 5      // Size of each input vector x_t
-#define HIDDEN_SIZE 16    // Size of each hidden state vector h_t
-#define SEQ_LENGTH 60     // Length of the input sequence
+// Define constants
+#define INPUT_SIZE 5      // Input feature size
+#define HIDDEN_SIZE 16    // Hidden state size
+#define SEQ_LENGTH 60     // Sequence length
 
-// Declare weight matrices and bias vectors for the LSTM gates
-extern fixed_type Wi[HIDDEN_SIZE][INPUT_SIZE];  // Input gate weight matrix (input)
-extern fixed_type Ui[HIDDEN_SIZE][HIDDEN_SIZE]; // Input gate weight matrix (hidden)
-extern fixed_type bi[HIDDEN_SIZE];             // Input gate bias vector
+// Weight matrices and biases for LSTM gates
+extern fixed_type W_i[HIDDEN_SIZE][INPUT_SIZE];
+extern fixed_type U_i[HIDDEN_SIZE][HIDDEN_SIZE];
+extern fixed_type b_i[HIDDEN_SIZE];
 
-extern fixed_type Wf[HIDDEN_SIZE][INPUT_SIZE];  // Forget gate weight matrix (input)
-extern fixed_type Uf[HIDDEN_SIZE][HIDDEN_SIZE]; // Forget gate weight matrix (hidden)
-extern fixed_type bf[HIDDEN_SIZE];             // Forget gate bias vector
+extern fixed_type W_f[HIDDEN_SIZE][INPUT_SIZE];
+extern fixed_type U_f[HIDDEN_SIZE][HIDDEN_SIZE];
+extern fixed_type b_f[HIDDEN_SIZE];
 
-extern fixed_type Wo[HIDDEN_SIZE][INPUT_SIZE];  // Output gate weight matrix (input)
-extern fixed_type Uo[HIDDEN_SIZE][HIDDEN_SIZE]; // Output gate weight matrix (hidden)
-extern fixed_type bo[HIDDEN_SIZE];             // Output gate bias vector
+extern fixed_type W_c[HIDDEN_SIZE][INPUT_SIZE];
+extern fixed_type U_c[HIDDEN_SIZE][HIDDEN_SIZE];
+extern fixed_type b_c[HIDDEN_SIZE];
 
-extern fixed_type Wc[HIDDEN_SIZE][INPUT_SIZE];  // Cell state weight matrix (input)
-extern fixed_type Uc[HIDDEN_SIZE][HIDDEN_SIZE]; // Cell state weight matrix (hidden)
-extern fixed_type bc[HIDDEN_SIZE];             // Cell state bias vector
+extern fixed_type W_o[HIDDEN_SIZE][INPUT_SIZE];
+extern fixed_type U_o[HIDDEN_SIZE][HIDDEN_SIZE];
+extern fixed_type b_o[HIDDEN_SIZE];
 
 // Function declarations
-void lstm_cell(
-    fixed_type x[INPUT_SIZE], 
-    fixed_type h_prev[HIDDEN_SIZE], 
-    fixed_type c_prev[HIDDEN_SIZE], 
-    fixed_type h[HIDDEN_SIZE], 
-    fixed_type c[HIDDEN_SIZE]
-);
-
-void lstm_sequence(
-    fixed_type x_seq[SEQ_LENGTH][INPUT_SIZE], 
-    fixed_type h[HIDDEN_SIZE]
-);
+void lstm_cell(fixed_type x[INPUT_SIZE], fixed_type h_prev[HIDDEN_SIZE], fixed_type c_prev[HIDDEN_SIZE], 
+               fixed_type h[HIDDEN_SIZE], fixed_type c[HIDDEN_SIZE]);
+void lstm_sequence(fixed_type x_seq[SEQ_LENGTH][INPUT_SIZE], fixed_type h[HIDDEN_SIZE]);
 
 #endif // LSTM_RNN_H
