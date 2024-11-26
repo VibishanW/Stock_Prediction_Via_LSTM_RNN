@@ -116,6 +116,10 @@ This will allow me to create accurate comparisons to document percent accuracy d
 normalized and priced data. After creating a full fledged LSTM-RNN I will be working on optimizing the design.
 
 # Project Update 2:
-LSTM-RNN:
+LSTM-RNN: Implemented full LSTM-RNN and use is Xavier's formula to initialize weights. New files include lstm_rnn.h, lstm_rnn.cpp, testbench, and the same input file is used from the RNN implementation. Unfortunately, I ran into error while trying to simulate the design related to the lstm_sequence method. No obvious errors appear, but i believe it has something to with my Xaviers weight initialization step.
+After fixing the errors, the goal is to create a bitstream and exe similar to how the RNN implementation operates.
 
 RNN: In this update I completed the RNN implementation by creating a host.cpp and Makefile to synthesize a rnn_sequence.xclbin and rnn_sequence.exe. The files used to generate the bitstream and .exe are present as well as the prebuilt files. The readme is also updated with instructions how to program the u280 with the RNN hardware implementation.
+
+Whats next?
+The LSTM-RNN implementation has some errors that need to be fixed. After these errors are resolved I will be working on data analysis and optimization. This involves creating a output file of predictions to compare to actual data resulting in a percent accuracy for the model. After doing some comparisons between the hardware and software implementations, I plan on looking back at previous papers to see how I can optimize my design and maybe introduce larger data sets.
