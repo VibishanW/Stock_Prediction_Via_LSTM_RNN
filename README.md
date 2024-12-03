@@ -10,8 +10,13 @@ Access to a build machine equipped with Vitis 2023.2 is required. If you don't h
 - Vitis 2023.2
 
 ## 1. Clone the repository
+# RNN Repository
 ```bash
 git clone https://github.com/VibishanW/Stock_Prediction_Via_LSTM_RNN/RNN_HW
+```
+# LSTM RNN Repository
+```bash
+git clone https://github.com/VibishanW/Stock_Prediction_Via_LSTM_RNN/LSTM_RNN_HW
 ```
 
 ## 2. Build
@@ -59,6 +64,69 @@ g++ -std=c++17 -I/opt/xilinx/xrt/include -L/opt/xilinx/xrt/lib -o rnn_sequence.e
 
 Verify that you are on a machine connected to a u280 or access a NERC server with access to one.
 Verify that rnn_sequencer.exe and rnn_sequencer.xclbin exist on your machine or the server and cd to its location then use the following command to program the FPGA:
+
+```bash
+./rnn_sequence.exe rnn_sequence.xclbin
+```
+
+# Instructions for running LSTM RNN in hardware
+## Prerequisites
+Access to a build machine equipped with Vitis 2023.2 is required. If you don't have access to one, we can offer assistance in providing access. Please refer to the instructions provided at [this link](https://github.com/OCT-FPGA/OCT-Tutorials/blob/master/nercsetup/nerc-vm-guide.md).
+
+## Tools
+- Vitis 2023.2
+
+## 1. Clone the repository
+# LSTM RNN Repository
+```bash
+git clone https://github.com/VibishanW/Stock_Prediction_Via_LSTM_RNN/LSTM_RNN_HW
+```
+
+## 2. Build
+Make sure that ```XILINX_VITIS``` and ```XILINX_XRT``` environment variables are set. This can be done by
+
+```bash
+source /tools/Xilinx/Vitis/2023.2/settings64.sh
+```
+
+```bash
+source /opt/xilinx/xrt/setup.sh
+```
+
+In Vitis...
+Select 'Create HLS Component'
+Configuration file selection can be left to default and select a location for the component
+Select 'Empty File" for the config file in the next page
+
+For source files...
+Under design files select lstm_rnn.cpp and lstm_rnn.hpp from LSTM_RNN_HW
+Set top level function to lstm_sequencer
+Under testbench select testbench.cpp, data.txt, and out.gold.dat
+and select lstm_sequence for the top function
+
+For Hardware -> Part select 'xcu280-fsvh2892-2L-e'
+
+For Settings...
+Select 250MHz for clock speed
+Select Vitis Kernel Flow Target for Flow Target
+Select Generate a Vitis XO for Package Output Fromat
+
+Run Simulation, Synthesis, and package to generate a XO file.
+
+Then run the following to create the .xclbin
+
+```bash
+v++ -l -t hw --platform xilinx_u280_gen3x16_xdma_1_202211_1 -o lstm_sequencer.xclbin <path to .xo>
+```
+
+Generate lstm_sequence.exe with the following command
+
+```bash
+g++ -std=c++17 -I/opt/xilinx/xrt/include -L/opt/xilinx/xrt/lib -o lstm_sequence.exe host.cpp -lxrt_coreutil -pthread
+```
+
+Verify that you are on a machine connected to a u280 or access a NERC server with access to one.
+Verify that lstm_sequencer.exe and lstm_sequencer.xclbin exist on your machine or the server and cd to its location then use the following command to program the FPGA:
 
 ```bash
 ./rnn_sequence.exe rnn_sequence.xclbin
