@@ -4,7 +4,7 @@ It also contains a hardware implementation of a conventional RNN and a python im
 
 # Instructions for running RNN in hardware
 ## Prerequisites
-Access to a build machine equipped with Vitis 2023.1 is required. If you don't have access to one, we can offer assistance in providing access. Please refer to the instructions provided at [this link](https://github.com/OCT-FPGA/OCT-Tutorials/blob/master/nercsetup/nerc-vm-guide.md).
+Access to a build machine equipped with Vitis 2023.2 is required. If you don't have access to one, we can offer assistance in providing access. Please refer to the instructions provided at [this link](https://github.com/OCT-FPGA/OCT-Tutorials/blob/master/nercsetup/nerc-vm-guide.md).
 
 ## Tools
 - Vitis 2023.2
