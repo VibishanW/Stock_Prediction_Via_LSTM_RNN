@@ -7,7 +7,7 @@ It also contains a hardware implementation of a conventional RNN and a python im
 Access to a build machine equipped with Vitis 2023.1 is required. If you don't have access to one, we can offer assistance in providing access. Please refer to the instructions provided at [this link](https://github.com/OCT-FPGA/OCT-Tutorials/blob/master/nercsetup/nerc-vm-guide.md).
 
 ## Tools
-- Vitis 2022.2 or Vitis 2023.1
+- Vitis 2023.2
 
 ## 1. Clone the repository
 ```bash
@@ -18,7 +18,7 @@ git clone https://github.com/VibishanW/Stock_Prediction_Via_LSTM_RNN/RNN_HW
 Make sure that ```XILINX_VITIS``` and ```XILINX_XRT``` environment variables are set. This can be done by
 
 ```bash
-source /tools/Xilinx/Vitis/2022.2/settings64.sh
+source /tools/Xilinx/Vitis/2023.2/settings64.sh
 ```
 
 ```bash
@@ -32,6 +32,7 @@ Select 'Empty File" for the config file in the next page
 
 For source files...
 Under design files select rnn.cpp and rnn.hpp from RNN_HW
+Set top level function to rnn_sequencer
 Under testbench select testbench.cpp, testbench.hpp, data.txt, and out.gold.dat
 and select rnn_sequence for the top function
 
