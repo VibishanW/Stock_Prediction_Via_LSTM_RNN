@@ -1,35 +1,30 @@
-/*
-# Copyright (C) 2023, Advanced Micro Devices, Inc. All rights reserved.
-# SPDX-License-Identifier: X11
-*/
-
 #include "lstm_rnn.h"
-#include <cstdlib>
 #include <cmath>
+#include <fstream>
+#include <iostream>
+#include <vector>
 
 // Xavier initialization
 fixed_type xavier_initialization(int input_size, int output_size) {
-    float limit = std::sqrt(6.0f / (input_size + output_size));
-    float random_value = ((float)std::rand() / RAND_MAX) * 2.0f * limit - limit; // Uniform distribution
+    float limit = std::sqrt(12.0f / (input_size + output_size)); 
+    float random_value = ((float)std::rand() / RAND_MAX) * 2.0f * limit - limit; 
+    
     return fixed_type(random_value);
 }
 
-// Weight matrices and bias initialization using Xavier initialization
-fixed_type W_i[HIDDEN_SIZE][INPUT_SIZE];
-fixed_type U_i[HIDDEN_SIZE][HIDDEN_SIZE];
-fixed_type b_i[HIDDEN_SIZE];
 
-fixed_type W_f[HIDDEN_SIZE][INPUT_SIZE];
-fixed_type U_f[HIDDEN_SIZE][HIDDEN_SIZE];
-fixed_type b_f[HIDDEN_SIZE];
+// Clipping function
+inline fixed_type clip(fixed_type x, fixed_type min_val, fixed_type max_val) {
+    if (x < min_val) return min_val;
+    if (x > max_val) return max_val;
+    return x;
+}
 
-fixed_type W_c[HIDDEN_SIZE][INPUT_SIZE];
-fixed_type U_c[HIDDEN_SIZE][HIDDEN_SIZE];
-fixed_type b_c[HIDDEN_SIZE];
-
-fixed_type W_o[HIDDEN_SIZE][INPUT_SIZE];
-fixed_type U_o[HIDDEN_SIZE][HIDDEN_SIZE];
-fixed_type b_o[HIDDEN_SIZE];
+// Weight matrices and bias initialization
+fixed_type W_i[HIDDEN_SIZE][INPUT_SIZE], U_i[HIDDEN_SIZE][HIDDEN_SIZE], b_i[HIDDEN_SIZE];
+fixed_type W_f[HIDDEN_SIZE][INPUT_SIZE], U_f[HIDDEN_SIZE][HIDDEN_SIZE], b_f[HIDDEN_SIZE];
+fixed_type W_c[HIDDEN_SIZE][INPUT_SIZE], U_c[HIDDEN_SIZE][HIDDEN_SIZE], b_c[HIDDEN_SIZE];
+fixed_type W_o[HIDDEN_SIZE][INPUT_SIZE], U_o[HIDDEN_SIZE][HIDDEN_SIZE], b_o[HIDDEN_SIZE];
 
 // Initialize weights and biases
 void initialize_weights_and_biases() {
@@ -46,22 +41,63 @@ void initialize_weights_and_biases() {
             U_c[i][j] = xavier_initialization(HIDDEN_SIZE, HIDDEN_SIZE);
             U_o[i][j] = xavier_initialization(HIDDEN_SIZE, HIDDEN_SIZE);
         }
-        b_i[i] = 0;
-        b_f[i] = 0;
-        b_c[i] = 0;
-        b_o[i] = 0;
+        b_i[i] = xavier_initialization(1, HIDDEN_SIZE);
+        b_f[i] = xavier_initialization(1, HIDDEN_SIZE);
+        b_c[i] = xavier_initialization(1, HIDDEN_SIZE);
+        b_o[i] = xavier_initialization(1, HIDDEN_SIZE);
     }
 }
 
-inline fixed_type sigmoid(fixed_type x) {
-    return (fixed_type)1.0 / ((fixed_type)1.0 + hls::exp(-x));
+// Save weights to a file
+void save_weights(const std::string &filename, fixed_type weights[][INPUT_SIZE], int rows, int cols) {
+    std::ofstream file(filename);
+    if (!file.is_open()) {
+        std::cerr << "Error: Could not open file " << filename << " for saving weights." << std::endl;
+        return;
+    }
+
+    for (int i = 0; i < rows; i++) {
+        for (int j = 0; j < cols; j++) {
+            file << weights[i][j].to_double() << " ";
+        }
+        file << "\n";
+    }
+
+    file.close();
 }
 
-// LSTM cell implementation
-void lstm_cell(fixed_type x[INPUT_SIZE], fixed_type h_prev[HIDDEN_SIZE], fixed_type c_prev[HIDDEN_SIZE],
-               fixed_type h[HIDDEN_SIZE], fixed_type c[HIDDEN_SIZE]) {
-    #pragma HLS PIPELINE II=1
+// Load weights from a file
+bool load_weights(const std::string &filename, fixed_type weights[][INPUT_SIZE], int rows, int cols) {
+    std::ifstream file(filename);
+    if (!file.is_open()) {
+        return false;
+    }
 
+    for (int i = 0; i < rows; i++) {
+        for (int j = 0; j < cols; j++) {
+            double value;
+            if (!(file >> value)) {
+                return false;
+            }
+            weights[i][j] = fixed_type(value);
+        }
+    }
+
+    file.close();
+    return true;
+}
+
+// Activation functions
+inline fixed_type sigmoid(fixed_type x) {
+    fixed_type result = (fixed_type)1.0 / ((fixed_type)1.0 + hls::exp(-x));
+    return result;
+}
+
+// LSTM cell implementation with gate outputs
+void lstm_cell(fixed_type x[INPUT_SIZE], fixed_type h_prev[HIDDEN_SIZE], fixed_type c_prev[HIDDEN_SIZE],
+               fixed_type h[HIDDEN_SIZE], fixed_type c[HIDDEN_SIZE],
+               fixed_type i_gate[HIDDEN_SIZE], fixed_type f_gate[HIDDEN_SIZE],
+               fixed_type g_gate[HIDDEN_SIZE], fixed_type o_gate[HIDDEN_SIZE]) {
     for (int i = 0; i < HIDDEN_SIZE; i++) {
         fixed_type input_gate = b_i[i];
         fixed_type forget_gate = b_f[i];
@@ -69,7 +105,6 @@ void lstm_cell(fixed_type x[INPUT_SIZE], fixed_type h_prev[HIDDEN_SIZE], fixed_t
         fixed_type output_gate = b_o[i];
 
         for (int j = 0; j < INPUT_SIZE; j++) {
-            #pragma HLS UNROLL
             input_gate += W_i[i][j] * x[j];
             forget_gate += W_f[i][j] * x[j];
             candidate += W_c[i][j] * x[j];
@@ -77,40 +112,32 @@ void lstm_cell(fixed_type x[INPUT_SIZE], fixed_type h_prev[HIDDEN_SIZE], fixed_t
         }
 
         for (int j = 0; j < HIDDEN_SIZE; j++) {
-            #pragma HLS UNROLL
             input_gate += U_i[i][j] * h_prev[j];
             forget_gate += U_f[i][j] * h_prev[j];
             candidate += U_c[i][j] * h_prev[j];
             output_gate += U_o[i][j] * h_prev[j];
         }
 
-        input_gate = sigmoid(input_gate);
-        forget_gate = sigmoid(forget_gate);
-        candidate = hls::tanh(candidate);
-        output_gate = sigmoid(output_gate);
+        i_gate[i] = sigmoid(input_gate);
+        f_gate[i] = sigmoid(forget_gate);
+        g_gate[i] = hls::tanh(candidate);
+        o_gate[i] = sigmoid(output_gate);
 
-        c[i] = forget_gate * c_prev[i] + input_gate * candidate;
-        h[i] = output_gate * hls::tanh(c[i]);
+        c[i] = clip(f_gate[i] * c_prev[i] + i_gate[i] * g_gate[i], -50.0, 50.0);
+        h[i] = o_gate[i] * hls::tanh(c[i]);
     }
 }
 
-// LSTM sequence processing
-void lstm_sequence(fixed_type x_seq[SEQ_LENGTH][INPUT_SIZE], fixed_type h[HIDDEN_SIZE]) {
-    #pragma HLS ARRAY_PARTITION variable=W_i complete dim=2
-    #pragma HLS ARRAY_PARTITION variable=U_i complete dim=2
-    #pragma HLS ARRAY_PARTITION variable=b_i complete dim=1
-    #pragma HLS ARRAY_PARTITION variable=h complete dim=1
-
-    fixed_type c[HIDDEN_SIZE] = {0};
-    fixed_type h_prev[HIDDEN_SIZE] = {0};
-    fixed_type c_prev[HIDDEN_SIZE] = {0};
-
+// LSTM sequence processing with gate debugging
+void lstm_sequence(fixed_type x_seq[SEQ_LENGTH][INPUT_SIZE], fixed_type h[HIDDEN_SIZE], fixed_type c[HIDDEN_SIZE],
+                   fixed_type output_data[INPUT_SIZE],
+                   fixed_type i_gate[HIDDEN_SIZE], fixed_type f_gate[HIDDEN_SIZE],
+                   fixed_type g_gate[HIDDEN_SIZE], fixed_type o_gate[HIDDEN_SIZE]) {
     for (int t = 0; t < SEQ_LENGTH; t++) {
-        lstm_cell(x_seq[t], h_prev, c_prev, h, c);
+        lstm_cell(x_seq[t], h, c, h, c, i_gate, f_gate, g_gate, o_gate);
+    }
 
-        for (int i = 0; i < HIDDEN_SIZE; i++) {
-            h_prev[i] = h[i];
-            c_prev[i] = c[i];
-        }
+    for (int i = 0; i < INPUT_SIZE; i++) {
+        output_data[i] = h[i];
     }
 }
