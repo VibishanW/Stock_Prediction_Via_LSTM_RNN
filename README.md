@@ -10,9 +10,9 @@ Access to a build machine equipped with Vitis 2023.2 is required. If you don't h
 - Vitis 2023.2
 
 ## 1. Clone the repository
-### RNN Repository
+### Repository
 ```bash
-git clone https://github.com/VibishanW/Stock_Prediction_Via_LSTM_RNN/RNN_HW
+git clone https://github.com/VibishanW/Stock_Prediction_Via_LSTM_RNN.git
 ```
 
 ## 2. Build
