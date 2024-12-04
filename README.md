@@ -109,23 +109,34 @@ Select Generate a Vitis XO for Package Output Fromat
 
 Run Simulation, Synthesis, and package to generate a XO file.
 
-Then run the following to create the .xclbin
+Then run the following to create the .xclbin and executable
 
+### Instructions on generating Bitstream and Executable
 ```bash
 v++ -l -t hw --platform xilinx_u280_gen3x16_xdma_1_202211_1 -o lstm_sequencer.xclbin <path to .xo>
 ```
 
-Generate lstm_sequence.exe with the following command
+Generate host_xrt (executable) with the following command or cd to Bitstream folder and run make.
 
 ```bash
-g++ -std=c++17 -I/opt/xilinx/xrt/include -L/opt/xilinx/xrt/lib -o lstm_sequence.exe host.cpp -lxrt_coreutil -pthread -lOpenCL
+g++ -std=c++17 -I/opt/xilinx/xrt/include -L/opt/xilinx/xrt/lib -o host_xrt.exe host.cpp -lxrt_coreutil -pthread
 ```
 
 Verify that you are on a machine connected to a u280 or access a NERC server with access to one.
-Verify that lstm_sequencer.exe and lstm_sequencer.xclbin exist on your machine or the server and cd to its location then use the following command to program the FPGA:
+Verify that host_xrt, lstm_sequencer.xclbin, and a desired data.txt exist on your machine or the server and cd to its location then use the following command to program the FPGA:
 
 ```bash
-./lstm_sequence.exe rnn_sequence.xclbin
+./host_xrt lstm_sequencer.xclbin data.txt
+```
+
+### Instructions on using prebuilt files in cloud lab
+After cloning repository in OCT run the following commands:
+
+```bash
+cd Stock_Prediction_Via_LSTM_RNN/LSTM_RNN_HW/Bitstream/
+chmod +x host_xrt
+./host_xrt lstm_sequencer.xclbin data.dat
+cat output.dat 
 ```
 
 # Instructions for running RNN in software
@@ -188,3 +199,6 @@ RNN: In this update I completed the RNN implementation by creating a host.cpp an
 
 Whats next?
 The LSTM-RNN implementation has some errors that need to be fixed. After these errors are resolved I will be working on data analysis and optimization. This involves creating a output file of predictions to compare to actual data resulting in a percent accuracy for the model. After doing some comparisons between the hardware and software implementations, I plan on looking back at previous papers to see how I can optimize my design and maybe introduce larger data sets.
+
+# Final Update:
+LSTM-RNN: 
