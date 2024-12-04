@@ -118,14 +118,14 @@ v++ -l -t hw --platform xilinx_u280_gen3x16_xdma_1_202211_1 -o lstm_sequencer.xc
 Generate lstm_sequence.exe with the following command
 
 ```bash
-g++ -std=c++17 -I/opt/xilinx/xrt/include -L/opt/xilinx/xrt/lib -o lstm_sequence.exe host.cpp -lxrt_coreutil -pthread
+g++ -std=c++17 -I/opt/xilinx/xrt/include -L/opt/xilinx/xrt/lib -o lstm_sequence.exe host.cpp -lxrt_coreutil -pthread -lOpenCL
 ```
 
 Verify that you are on a machine connected to a u280 or access a NERC server with access to one.
 Verify that lstm_sequencer.exe and lstm_sequencer.xclbin exist on your machine or the server and cd to its location then use the following command to program the FPGA:
 
 ```bash
-./rnn_sequence.exe rnn_sequence.xclbin
+./lstm_sequence.exe rnn_sequence.xclbin
 ```
 
 # Instructions for running RNN in software
