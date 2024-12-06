@@ -1,0 +1,3 @@
+
+Predicted values for the next day (Open, Close, High, Low, Volume):
+[3.5259171e+02 3.4710452e+02 3.5318927e+02 3.5265952e+02 8.3173424e+07]
