@@ -140,6 +140,8 @@ cat output.dat
 ```
 
 # Instructions for running RNN in software
+There are 2 implementations: LSTM_RNN_Via_YFinance uses values S&P500 values via Yahoo Finance API and LSTM_RNN_Via_Input_Files uses 10 input files that are also used in the hardware implementation.
+
 ## 1. Clone the repository
 
 ```bash
@@ -158,8 +160,13 @@ python -m venv .venv
 source .venv/Scripts/activate
 ```
 
+For LSTM_RNN_Via_YFinance use...
 ```bash
 pip install tensorflow yfinance numpy pandas scikit-learn matplotlib
+```
+or for LSTM_RNN_Via_Input_Files use...
+```bash
+pip install numpy tensorflow scikit-learn
 ```
 
 ## 3. Run
@@ -170,6 +177,21 @@ python main.py
 ```
 
 Open Output file for results
+
+# Analytics Tools
+## Accuracy Analytics Calculator
+To determine accuracy of the software and hardware implementation outputs I created a Python script to calculate percent accuracy.
+
+The data was taken from real S&P500 data from 2020. The first 100 lines are split into 10 files of 10 rows each consecutively. A output_real file of 10 rows contains the next day's actual value. This enables both implementations to create a prediction for the 11th day's values which the python script compares to the real value. It then calculates a percent accuracy for each column (Open, Close, etc) and the implementation as whole by average the percentages out.
+
+To run this tool open LSTM_RNN_SW/Accuracy_Analytics_Calc then run the following commands:
+```bash
+python -m venv .venv
+source .venv/Scripts/activate
+pip install numpy tensorflow scikit-learn
+python calculateAccuracy
+```
+The result should be a prediction_accuracy_metrics.txt
 
 # Project Update 1:
 LSTM-RNN:
