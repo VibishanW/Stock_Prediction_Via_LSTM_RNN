@@ -1,0 +1,17 @@
+Hardware Predictions (U280):
+Open - Percent Accuracy: 94.71%, Percent Error: 5.29%
+Close - Percent Accuracy: 94.93%, Percent Error: 5.07%
+High - Percent Accuracy: 95.82%, Percent Error: 4.18%
+Low - Percent Accuracy: 94.83%, Percent Error: 5.17%
+Volume - Percent Accuracy: 79.86%, Percent Error: 20.14%
+Overall Accuracy: 92.03%
+Overall Error: 7.97%
+
+Software Predictions (Python):
+Open - Percent Accuracy: 95.33%, Percent Error: 4.67%
+Close - Percent Accuracy: 95.27%, Percent Error: 4.73%
+High - Percent Accuracy: 96.03%, Percent Error: 3.97%
+Low - Percent Accuracy: 95.51%, Percent Error: 4.49%
+Volume - Percent Accuracy: 73.27%, Percent Error: 26.73%
+Overall Accuracy: 91.08%
+Overall Error: 8.92%
